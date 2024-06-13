@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ezpyai"
-version = "0.0.2a1"
+version = "0.0.1a2"
 authors = [{ name = "Ciprian Mandache", email = "psyb0t@51k.eu" }]
 description = "A useful utility library for AI applications"
 readme = "README.md"
