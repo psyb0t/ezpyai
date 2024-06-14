@@ -49,3 +49,11 @@ We love contributions like hackers love caffeine. Found a bug? Have a brilliant 
 ## License
 
 **ezpyai** is unleashed under the WTFPL (Do What The Fuck You Want To Public License). Copy it, change it, or repurpose it to start your own digital riot.
+
+## Development notes
+
+This project uses [ez-pre-commit](https://github.com/psyb0t/ez-pre-commit) so you need to install `ez-pre-commit` on your device and then run
+
+```bash
+ez-pre-commit install
+```
