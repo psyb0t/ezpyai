@@ -2,9 +2,9 @@ GENERIC_SYSTEM_MESSAGE = "You are a helpful AI assistant."
 
 
 class Prompt:
+    _user_message: str = ""
     _system_message: str = ""
     _context: str = ""
-    _user_message: str = ""
 
     def __init__(
         self,
