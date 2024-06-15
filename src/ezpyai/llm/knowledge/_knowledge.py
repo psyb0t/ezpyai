@@ -17,7 +17,11 @@ class Knowledge(ABC):
         pass
 
     @abstractmethod
-    def store(self, data_path: str) -> None:
+    def store(self, collection: str, data_path: str) -> None:
+        pass
+
+    @abstractmethod
+    def search(self, collection: str, query: str) -> List[KnowledgeItem]:
         pass
 
 
