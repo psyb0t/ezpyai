@@ -1,31 +1,8 @@
-from abc import ABC, abstractmethod
 from typing import List
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 
-class Knowledge(ABC):
-    @abstractmethod
-    def get_name(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_dsn(self) -> str:
-        pass
-
-    @abstractmethod
-    def destroy(self) -> None:
-        pass
-
-    @abstractmethod
-    def store(self, collection: str, data_path: str) -> None:
-        pass
-
-    @abstractmethod
-    def search(self, collection: str, query: str) -> List[KnowledgeItem]:
-        pass
-
-
-class BaseKnowledge(Knowledge):
+class BaseKnowledge:
     _name: str = None
     _dsn: str = None
 

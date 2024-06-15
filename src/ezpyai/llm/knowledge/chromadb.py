@@ -33,8 +33,13 @@ class ChromaDB(BaseKnowledge):
 
         self._client = chromadb.PersistentClient(
             path=dsn,
-            settings=chromadb.Settings(anonymized_telemetry=False),
+            settings=chromadb.Settings(
+                allow_reset=True,
+                anonymized_telemetry=False,
+            ),
         )
+
+        self._client
 
         self._embedding_function = embedding_function
 
