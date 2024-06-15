@@ -1,5 +1,4 @@
 import json
-from abc import ABC, abstractmethod
 from ezpyai.llm.prompt import Prompt
 from typing import Union, Dict, List, Any
 
@@ -9,17 +8,15 @@ _STRUCTURED_RESPONSE_OUTPUT_INSTRUCTIONS = (
 )
 
 
-class LLM(ABC):
-    @abstractmethod
-    def get_response(self, prompt: Prompt) -> str:
-        pass
+class BaseLLM:
+    _name: str = None
 
-    @abstractmethod
-    def get_structured_response(self, prompt: Prompt) -> dict:
-        pass
+    def __init__(self, name: str) -> None:
+        self._name = name
 
+    def __str__(self) -> str:
+        return f"_BaseLLM(name={self._name})"
 
-class _BaseLLM(LLM):
     def get_response(self, _: Prompt) -> str:
         return ""
 

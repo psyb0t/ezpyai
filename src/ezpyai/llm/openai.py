@@ -1,8 +1,9 @@
 import os
 import ezpyai.llm.exceptions as exceptions
+
 from typing import Annotated
 from openai import OpenAI as _OpenAI
-from ezpyai.llm.llm import _BaseLLM
+from ezpyai.llm._llm import BaseLLM
 from ezpyai.llm.prompt import Prompt
 
 
@@ -39,12 +40,13 @@ MODEL_GPT_3_5_TURBO_16K: str = (
     "gpt-3.5-turbo-16k-0613"  # context window = 16,385 tokens, trained up to Sep 2021, to be deprecated June 2024
 )
 
+_LLM_NAME: str = "OpenAI"
 _DEFAULT_MODEL: str = MODEL_GPT_3_5_TURBO
 _DEFAULT_TEMPERATURE: float = 0.5
 _DEFAULT_MAX_TOKENS: int = 150
 
 
-class OpenAI(_BaseLLM):
+class OpenAI(BaseLLM):
     _client: _OpenAI = None
     _model: str = _DEFAULT_MODEL
     _temperature: float = _DEFAULT_TEMPERATURE
@@ -59,6 +61,8 @@ class OpenAI(_BaseLLM):
         organization: str = os.getenv("OPENAI_ORGANIZATION"),
         project: str = os.getenv("OPENAI_PROJECT"),
     ) -> None:
+        super().__init__(name=_LLM_NAME)
+
         self._client = _OpenAI(
             api_key=api_key,
             organization=organization,
@@ -70,7 +74,9 @@ class OpenAI(_BaseLLM):
         self._max_tokens = max_tokens
 
     def __str__(self) -> str:
-        return f"OpenAI(model={self._model}, temperature={self._temperature})"
+        return (
+            f"OpenAI(model={self._model}, temperature={self._temperature}, {super()})"
+        )
 
     def _get_system_message(self, message: str) -> dict:
         return {"role": "system", "content": message}
@@ -89,7 +95,7 @@ class OpenAI(_BaseLLM):
             messages.append(self._get_user_message(prompt.get_context()))
 
         if not prompt.has_user_message():
-            raise exceptions.NoUserMessage
+            raise exceptions.NoUserMessage()
 
         messages.append(self._get_user_message(prompt.get_user_message()))
 
@@ -109,9 +115,9 @@ class OpenAI(_BaseLLM):
                 messages=messages,
             )
         except Exception as e:
-            raise exceptions.InvokeError(e)
+            raise exceptions.InvokeError() from e
 
         if not response.choices:
-            raise exceptions.NoLLMResponseMessage
+            raise exceptions.NoLLMResponseMessage()
 
         return response.choices[0].message.content
