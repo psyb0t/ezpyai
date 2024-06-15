@@ -38,6 +38,13 @@ class BaseLLM:
                 for item, spec in zip(data, response_format)
             )
 
+    def remove_artifacts(self, response: str) -> str:
+        artifacts = ["```json", "```"]
+        for artifact in artifacts:
+            response = response.replace(artifact, "")
+
+        return response
+
     def get_structured_response(
         self, prompt: Prompt, response_format: Union[List, Dict]
     ) -> Union[List, Dict]:
@@ -47,18 +54,10 @@ class BaseLLM:
             system_message=f"{prompt.get_system_message()}. {_STRUCTURED_RESPONSE_OUTPUT_INSTRUCTIONS} {json.dumps(response_format)}",
         )
 
-        response = remove_artifacts(self.get_response(prompt)).strip()
+        response = self.remove_artifacts(self.get_response(prompt)).strip()
 
         structured_resp = json.loads(response)
         if self._validate_response_format(structured_resp, response_format):
             return structured_resp
 
         return None
-
-
-def remove_artifacts(response: str) -> str:
-    artifacts = ["```json", "```"]
-    for artifact in artifacts:
-        response = response.replace(artifact, "")
-
-    return response
