@@ -1,3 +1,5 @@
+import logging
+
 from typing import Dict
 from ezpyai.llm.prompt import Prompt, SUMMARIZER_SYSTEM_MESSAGE
 from ezpyai.llm._llm import LLM
@@ -22,9 +24,13 @@ class KnowledgeItem:
         self.summary = ""
 
     def __str__(self):
-        return f"KnowledgeItem(metadata={self.metadata}, content length={len(self.content)}, summary={self.summary})"
+        return f"{self.__class__.__name__}(metadata={self.metadata}, content={self.content}, summary={self.summary})"
 
     def summarize(self, summarizer: LLM) -> str:
+        logging.debug(
+            f"Summarizing content {self.content} with metadata {self.metadata}"
+        )
+
         prompt: Prompt = Prompt(
             system_message=SUMMARIZER_SYSTEM_MESSAGE,
             user_message=f"Summarize the following text: {self.content}",

@@ -23,7 +23,7 @@ class Prompt:
         self._context = context
 
     def __str__(self) -> str:
-        return f"Prompt(system_message={self._system_message}, context={self._context}, user_message={self._user_message})"
+        return f"{self.__class__.__name__}(system_message={self._system_message}, context={self._context}, user_message={self._user_message})"
 
     def has_system_message(self) -> bool:
         return bool(self._system_message)

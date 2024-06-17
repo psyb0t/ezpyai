@@ -26,12 +26,6 @@ class LLM(ABC):
 
 
 class BaseLLM(LLM):
-    def __init__(self, name: str) -> None:
-        self._name = name
-
-    def __str__(self) -> str:
-        return f"_BaseLLM(name={self._name})"
-
     def get_response(self, _: Prompt) -> str:
         return ""
 

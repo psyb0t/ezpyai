@@ -1,4 +1,5 @@
 import os
+import logging
 import ezpyai.llm.exceptions as exceptions
 
 from typing import Annotated
@@ -40,7 +41,6 @@ MODEL_GPT_3_5_TURBO_16K: str = (
     "gpt-3.5-turbo-16k-0613"  # context window = 16,385 tokens, trained up to Sep 2021, to be deprecated June 2024
 )
 
-_LLM_NAME: str = "OpenAI"
 _DEFAULT_MODEL: str = MODEL_GPT_3_5_TURBO
 _DEFAULT_TEMPERATURE: float = 0.5
 _DEFAULT_MAX_TOKENS: int = 150
@@ -56,8 +56,6 @@ class OpenAI(BaseLLM):
         organization: str = os.getenv("OPENAI_ORGANIZATION"),
         project: str = os.getenv("OPENAI_PROJECT"),
     ) -> None:
-        super().__init__(name=_LLM_NAME)
-
         self._client = _OpenAI(
             api_key=api_key,
             organization=organization,
@@ -69,9 +67,7 @@ class OpenAI(BaseLLM):
         self._max_tokens = max_tokens
 
     def __str__(self) -> str:
-        return (
-            f"OpenAI(model={self._model}, temperature={self._temperature}, {super()})"
-        )
+        return f"{self.__class__.__name__}(model={self._model}, temperature={self._temperature}, max_tokens={self._max_tokens})"
 
     def _get_system_message(self, message: str) -> dict:
         return {"role": "system", "content": message}
@@ -103,6 +99,8 @@ class OpenAI(BaseLLM):
         messages = self._prompt_to_messages(prompt)
 
         try:
+            logging.debug(f"Sending messages: {messages} to model {self._model}")
+
             response = self._client.chat.completions.create(
                 model=self._model,
                 temperature=self._temperature,

@@ -41,9 +41,6 @@ class ChromaDB(BaseKnowledge):
 
         logging.debug(f"ChromaDB initialized with name={name} and dsn={dsn}")
 
-    def __str__(self) -> str:
-        return f"ChromaDB({super()})"
-
     def destroy(self) -> None:
         """Destroy the ChromaDB."""
         logging.debug("ChromaDB destroyed")

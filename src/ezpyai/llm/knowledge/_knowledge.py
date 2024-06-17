@@ -32,7 +32,7 @@ class BaseKnowledge(Knowledge):
         self._dsn = dsn
 
     def __str__(self) -> str:
-        return f"BaseKnowledge(name={self._name}, dsn={self._dsn})"
+        return f"{self.__class__.__name__}(name={self._name}, dsn={self._dsn})"
 
     def get_name(self) -> str:
         return self._name

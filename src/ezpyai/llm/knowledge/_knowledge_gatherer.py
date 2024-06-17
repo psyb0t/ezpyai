@@ -48,7 +48,7 @@ class KnowledgeGatherer:
         logging.debug("KnowledgeGatherer initialized with an empty _items dictionary.")
 
     def __str__(self) -> str:
-        return f"KnowledgeGatherer(data={self._items.keys()})"
+        return f"{self.__class__.__name__}(data={self._items.keys()})"
 
     def _get_knowledge_item_from_file_paragraph(
         self,
