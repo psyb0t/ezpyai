@@ -37,11 +37,9 @@ class KnowledgeGatherer:
     It adds each file's data to the _items dictionary with its SHA256 hash as the key.
 
     Attributes:
-        _items (Dict[str, KnowledgeItem]): Stores the processed
-        knowledge data, with SHA256 of the content as keys.
+        _items (Dict[str, KnowledgeItem]): A dictionary containing file paths
+        and their processed content indexed by SHA256 hashes of the content.
     """
-
-    _items: Dict[str, KnowledgeItem]
 
     def __init__(self):
         """Initialize the KnowledgeGatherer with an empty _items dictionary."""
@@ -52,29 +50,37 @@ class KnowledgeGatherer:
     def __str__(self) -> str:
         return f"KnowledgeGatherer(data={self._items.keys()})"
 
-    def _get_file_data(self, file_path: str, content: str) -> KnowledgeItem:
+    def _get_knowledge_item_from_file_paragraph(
+        self,
+        file_path: str,
+        paragraph: str,
+        paragraph_number: int = 0,
+    ) -> KnowledgeItem:
         """
-        Get the file data from the given file path and content.
+        Get the knowledge item from the given file and paragraph content.
 
         Args:
             file_path (str): The path to the file.
-            content (str): The content of the file.
+            content (str): The content of the paragraph.
 
         Returns:
-            KnowledgeItem: The file data as a KnowledgeItem object.
+            KnowledgeItem: The knowledge item from the file and paragraph content.
         """
-        logging.debug(f"Getting data from file: {file_path}")
+        logging.debug(
+            f"Getting knowledge item from file: {file_path}, paragraph_number: {paragraph_number}"
+        )
 
         file_dir = os.path.dirname(file_path)
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         file_ext = os.path.splitext(file_path)[1]
 
         return KnowledgeItem(
-            content=content,
+            content=paragraph,
             metadata={
                 "file_dir": file_dir,
                 "file_name": file_name,
                 "file_ext": file_ext,
+                "paragraph_number": paragraph_number,
             },
         )
 
@@ -146,11 +152,26 @@ class KnowledgeGatherer:
                 f"Error reading {file_path}: {str(e)}"
             ) from e
 
-        content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-        self._items[content_hash] = self._get_file_data(file_path, content)
+        paragraphs = content.split("\n")
+        paragraph_counter = 1
+        for paragraph in paragraphs:
+            paragraph = paragraph.strip()
+            if not paragraph:
+                continue
+
+            paragraph_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+            self._items[paragraph_hash] = self._get_knowledge_item_from_file_paragraph(
+                file_path=file_path,
+                paragraph=paragraph,
+                paragraph_number=paragraph_counter,
+            )
+
+            paragraph_counter += 1
+
+            logging.debug(f"Added to data dictionary with key {paragraph_hash}")
 
         logging.debug(
-            f"Processed file: {file_path} and added to data dictionary with key {content_hash}"
+            f"Processed file: {file_path} and added {len(paragraphs)} paragraphs to data dictionary"
         )
 
     def _process_zip(self, zip_path: str):

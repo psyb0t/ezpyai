@@ -47,11 +47,6 @@ _DEFAULT_MAX_TOKENS: int = 150
 
 
 class OpenAI(BaseLLM):
-    _client: _OpenAI = None
-    _model: str = _DEFAULT_MODEL
-    _temperature: float = _DEFAULT_TEMPERATURE
-    _max_tokens: int = _DEFAULT_MAX_TOKENS
-
     def __init__(
         self,
         model: str = _DEFAULT_MODEL,
@@ -92,7 +87,7 @@ class OpenAI(BaseLLM):
             messages.append(self._get_system_message(prompt.get_system_message()))
 
         if prompt.has_context():
-            messages.append(self._get_user_message(prompt.get_context()))
+            messages.append(self._get_user_message(prompt.get_context_as_string()))
 
         if not prompt.has_user_message():
             raise exceptions.NoUserMessage()

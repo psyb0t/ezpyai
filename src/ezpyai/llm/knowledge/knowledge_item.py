@@ -1,4 +1,6 @@
 from typing import Dict
+from ezpyai.llm.prompt import Prompt, SUMMARIZER_SYSTEM_MESSAGE
+from ezpyai.llm._llm import LLM
 
 
 class KnowledgeItem:
@@ -8,15 +10,28 @@ class KnowledgeItem:
     Attributes:
         metadata (Dict[str, str]): The metadata of the knowledge item.
         content (str): The content of the knowledge item.
+        summary (str): The summary of the knowledge item's content.
     """
 
-    metadata: Dict[str, str]
-    content: str
-    summary: str  # TODO: implement summarization using uncensored open-source model
+    def __init__(self, content: str, metadata: Dict[str, str] = None):
+        if metadata is None:
+            metadata = {}
 
-    def __init__(self, content: str, metadata: Dict[str, str]):
-        self.content = content
         self.metadata = metadata
+        self.content = content
+        self.summary = ""
 
     def __str__(self):
-        return f"KnowledgeItem(metadata={self.metadata}, content length={len(self.content)})"
+        return f"KnowledgeItem(metadata={self.metadata}, content length={len(self.content)}, summary={self.summary})"
+
+    def summarize(self, summarizer: LLM) -> str:
+        prompt: Prompt = Prompt(
+            system_message=SUMMARIZER_SYSTEM_MESSAGE,
+            user_message=f"Summarize the following text: {self.content}",
+        )
+
+        self.summary = summarizer.get_structured_response(
+            prompt, response_format={"summary": ""}
+        )["summary"]
+
+        return self.summary

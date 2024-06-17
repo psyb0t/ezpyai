@@ -3,6 +3,7 @@ import chromadb
 import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
+from ezpyai.llm._llm import LLM
 from ezpyai.llm.knowledge._knowledge import BaseKnowledge
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
@@ -15,9 +16,6 @@ class ChromaDB(BaseKnowledge):
     ChromaDB is a wrapper around the Chroma library for
     storing and retrieving embeddings from a Chroma database.
     """
-
-    _client: chromadb.ClientAPI = None
-    _embedding_function: ef.EmbeddingFunction = EMBEDDING_FUNCTION_ONNX_MINI_LM_L6_V2
 
     def __init__(
         self,
@@ -38,8 +36,6 @@ class ChromaDB(BaseKnowledge):
                 anonymized_telemetry=False,
             ),
         )
-
-        self._client
 
         self._embedding_function = embedding_function
 
@@ -103,7 +99,12 @@ class ChromaDB(BaseKnowledge):
             f"{collection} with document IDs: {document_ids}"
         )
 
-    def search(self, collection: str, query: str) -> List[KnowledgeItem]:
+    def search(
+        self,
+        collection: str,
+        query: str,
+        num_results: int = 1,
+    ) -> List[KnowledgeItem]:
         """
         Search the collection for the given query.
 
@@ -124,7 +125,7 @@ class ChromaDB(BaseKnowledge):
         result: chromadb.QueryResult = collection.query(
             include=["documents", "metadatas"],
             query_texts=[query],
-            n_results=2,
+            n_results=num_results,
         )
 
         documents = result["documents"][0]
