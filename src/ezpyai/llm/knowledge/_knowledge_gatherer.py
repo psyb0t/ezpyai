@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from typing import Dict
 from PyPDF2 import PdfReader
 from docx import Document
+from ezpyai.llm.knowledge._knowledge_db import KnowledgeDB
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 _MIMETYPE_TEXT = "text/plain"
@@ -41,8 +42,9 @@ class KnowledgeGatherer:
         and their processed content indexed by SHA256 hashes of the content.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the KnowledgeGatherer with an empty _items dictionary."""
+
         self._items: Dict[str, KnowledgeItem] = {}
 
         logging.debug("KnowledgeGatherer initialized with an empty _items dictionary.")

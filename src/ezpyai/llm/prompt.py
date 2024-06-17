@@ -1,8 +1,11 @@
+import os
 from typing import List
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 GENERIC_SYSTEM_MESSAGE = "You are a helpful AI assistant."
 SUMMARIZER_SYSTEM_MESSAGE = """You are a summarizer AI assistant.
-whenever a human gives you a chunk of text, you will respond with a summary of the text."""
+Whenever a user gives you a chunk of text, you will respond with a summary of the text."""
 
 
 class Prompt:

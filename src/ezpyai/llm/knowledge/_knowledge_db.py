@@ -4,7 +4,7 @@ from ezpyai.llm._llm import LLM
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 
-class Knowledge:
+class KnowledgeDB(ABC):
     @abstractmethod
     def get_name(self) -> str:
         pass
@@ -26,7 +26,7 @@ class Knowledge:
         pass
 
 
-class BaseKnowledge(Knowledge):
+class BaseKnowledgeDB(KnowledgeDB):
     def __init__(self, name: str, dsn: str) -> None:
         self._name = name
         self._dsn = dsn

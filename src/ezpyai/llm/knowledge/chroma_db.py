@@ -3,15 +3,14 @@ import chromadb
 import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
-from ezpyai.llm._llm import LLM
-from ezpyai.llm.knowledge._knowledge import BaseKnowledge
+from ezpyai.llm.knowledge._knowledge_db import BaseKnowledgeDB
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 EMBEDDING_FUNCTION_ONNX_MINI_LM_L6_V2: ef.EmbeddingFunction = ef.ONNXMiniLM_L6_V2()
 
 
-class ChromaDB(BaseKnowledge):
+class ChromaDB(BaseKnowledgeDB):
     """
     ChromaDB is a wrapper around the Chroma library for
     storing and retrieving embeddings from a Chroma database.
