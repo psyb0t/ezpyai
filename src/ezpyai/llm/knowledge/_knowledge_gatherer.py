@@ -5,7 +5,6 @@ import tempfile
 import zipfile
 import shutil
 import hashlib
-import logging
 import pandas as pd
 import xml.etree.ElementTree as ET
 import ezpyai.llm.knowledge.exceptions as exceptions
@@ -14,7 +13,10 @@ from bs4 import BeautifulSoup
 from typing import Dict
 from PyPDF2 import PdfReader
 from docx import Document
-from ezpyai.llm.knowledge._knowledge_db import KnowledgeDB
+from ezpyai._logger import logger
+from ezpyai._constants import _DICT_KEY_SUMMARY
+from ezpyai.llm._llm import LLM
+from ezpyai.llm.prompt import Prompt, SUMMARIZER_SYSTEM_MESSAGE
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 _MIMETYPE_TEXT = "text/plain"
@@ -42,12 +44,13 @@ class KnowledgeGatherer:
         and their processed content indexed by SHA256 hashes of the content.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, summarizer: LLM = None) -> None:
         """Initialize the KnowledgeGatherer with an empty _items dictionary."""
 
         self._items: Dict[str, KnowledgeItem] = {}
+        self._summarizer: LLM = summarizer
 
-        logging.debug("KnowledgeGatherer initialized with an empty _items dictionary.")
+        logger.debug("KnowledgeGatherer initialized with an empty _items dictionary.")
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(data={self._items.keys()})"
@@ -68,15 +71,18 @@ class KnowledgeGatherer:
         Returns:
             KnowledgeItem: The knowledge item from the file and paragraph content.
         """
-        logging.debug(
+        logger.debug(
             f"Getting knowledge item from file: {file_path}, paragraph_number: {paragraph_number}"
         )
+
+        id = hashlib.sha256(paragraph.encode("utf-8")).hexdigest()
 
         file_dir = os.path.dirname(file_path)
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         file_ext = os.path.splitext(file_path)[1]
 
         return KnowledgeItem(
+            id=id,
             content=paragraph,
             metadata={
                 "file_dir": file_dir,
@@ -85,6 +91,26 @@ class KnowledgeGatherer:
                 "paragraph_number": paragraph_number,
             },
         )
+
+    def _summarize(self, knowledge_item: KnowledgeItem) -> None:
+        if self._summarizer is None:
+            return ""
+
+        if knowledge_item.summary:
+            return knowledge_item.summary
+
+        logger.debug(f"Summarizing knowledge item: {knowledge_item}")
+
+        prompt: Prompt = Prompt(
+            system_message=SUMMARIZER_SYSTEM_MESSAGE,
+            user_message=f"Summarize the following text: {knowledge_item.content}",
+        )
+
+        knowledge_item.summary = self._summarizer.get_structured_response(
+            prompt, response_format={_DICT_KEY_SUMMARY: ""}
+        )[_DICT_KEY_SUMMARY]
+
+        logger.debug(f"Summarized knowledge item: {knowledge_item}")
 
     def _process_file(self, file_path: str):
         """
@@ -97,51 +123,51 @@ class KnowledgeGatherer:
             UnsupportedFileTypeError: If the file type is not supported.
             FileReadError: If there is an error reading the file.
         """
-        logging.debug(f"Processing file: {file_path}")
+        logger.debug(f"Processing file: {file_path}")
 
         mime = magic.Magic(mime=True)
         mime_type = mime.from_file(file_path)
 
         try:
             if _MIMETYPE_TEXT in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_TEXT}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_TEXT}")
 
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = file.read()
             elif _MIMETYPE_JSON in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_JSON}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_JSON}")
 
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = json.dumps(json.load(file))
             elif _MIMETYPE_PDF in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_PDF}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_PDF}")
 
                 reader = PdfReader(file_path)
                 content = " ".join(page.extract_text() or "" for page in reader.pages)
             elif _MIMETYPE_DOCX in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_DOCX}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_DOCX}")
 
                 doc = Document(file_path)
                 content = " ".join(para.text for para in doc.paragraphs if para.text)
             elif _MIMETYPE_CSV in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_CSV}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_CSV}")
 
                 df = pd.read_csv(file_path)
                 content = df.to_string()
             elif _MIMETYPE_HTML in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_HTML}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_HTML}")
 
                 with open(file_path, "r", encoding="utf-8") as file:
                     soup = BeautifulSoup(file, "html.parser")
                     content = soup.get_text()
             elif _MIMETYPE_XML in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_XML}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_XML}")
 
                 tree = ET.parse(file_path)
                 root = tree.getroot()
                 content = "".join(root.itertext())
             elif _MIMETYPE_ZIP in mime_type:
-                logging.debug(f"Processing file: {file_path} as {_MIMETYPE_ZIP}")
+                logger.debug(f"Processing file: {file_path} as {_MIMETYPE_ZIP}")
 
                 self._process_zip(file_path)
                 return
@@ -161,18 +187,21 @@ class KnowledgeGatherer:
             if not paragraph:
                 continue
 
-            paragraph_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-            self._items[paragraph_hash] = self._get_knowledge_item_from_file_paragraph(
+            knowledge_item = self._get_knowledge_item_from_file_paragraph(
                 file_path=file_path,
                 paragraph=paragraph,
                 paragraph_number=paragraph_counter,
             )
 
+            self._summarize(knowledge_item)
+
+            self._items[knowledge_item.id] = knowledge_item
+
+            logger.debug(f"Added {knowledge_item.id} to _items dictionary")
+
             paragraph_counter += 1
 
-            logging.debug(f"Added to data dictionary with key {paragraph_hash}")
-
-        logging.debug(
+        logger.debug(
             f"Processed file: {file_path} and added {len(paragraphs)} paragraphs to data dictionary"
         )
 
@@ -186,7 +215,7 @@ class KnowledgeGatherer:
         Raises:
             FileProcessingError: If an error occurs during the processing of the ZIP file.
         """
-        logging.debug(f"Processing ZIP file: {zip_path}")
+        logger.debug(f"Processing ZIP file: {zip_path}")
 
         temp_dir = tempfile.mkdtemp()
 
@@ -209,7 +238,7 @@ class KnowledgeGatherer:
         Args:
             directory (str): The path to the directory.
         """
-        logging.debug(f"Processing directory: {directory}")
+        logger.debug(f"Processing directory: {directory}")
 
         for root, _, files in os.walk(directory):
             for file in files:
@@ -223,7 +252,7 @@ class KnowledgeGatherer:
         Args:
             file_path (str): The path to the file or directory.
         """
-        logging.debug(f"Gathering data from: {file_path}")
+        logger.debug(f"Gathering data from: {file_path}")
 
         if os.path.isdir(file_path):
             self._process_directory(file_path)

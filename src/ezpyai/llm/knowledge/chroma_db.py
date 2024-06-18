@@ -1,11 +1,15 @@
-import logging
 import chromadb
+import json
 import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
+from ezpyai._logger import logger
+from ezpyai._constants import _DICT_KEY_SUMMARY
+from ezpyai.llm._llm import LLM
 from ezpyai.llm.knowledge._knowledge_db import BaseKnowledgeDB
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
+
 
 EMBEDDING_FUNCTION_ONNX_MINI_LM_L6_V2: ef.EmbeddingFunction = ef.ONNXMiniLM_L6_V2()
 
@@ -38,15 +42,15 @@ class ChromaDB(BaseKnowledgeDB):
 
         self._embedding_function = embedding_function
 
-        logging.debug(f"ChromaDB initialized with name={name} and dsn={dsn}")
+        logger.debug(f"ChromaDB initialized with name={name} and dsn={dsn}")
 
     def destroy(self) -> None:
         """Destroy the ChromaDB."""
-        logging.debug("ChromaDB destroyed")
+        logger.debug("ChromaDB destroyed")
 
         self._client.reset()
 
-    def store(self, collection: str, data_path: str) -> None:
+    def store(self, collection: str, data_path: str, summarizer: LLM = None) -> None:
         """
         Store the data in the given collection.
 
@@ -54,19 +58,25 @@ class ChromaDB(BaseKnowledgeDB):
             collection (str): The name of the collection.
             data_path (str): The path to the data.
         """
-        logging.debug(f"Storing data in collection: {collection} from: {data_path}")
+        logger.debug(f"Storing data in collection: {collection} from: {data_path}")
 
-        knowledge_gatherer: KnowledgeGatherer = KnowledgeGatherer()
+        knowledge_gatherer: KnowledgeGatherer = KnowledgeGatherer(
+            summarizer=summarizer,
+        )
+
         knowledge_gatherer.gather(data_path)
+        knowledge_items = knowledge_gatherer.get_items()
+
+        logger.debug(
+            f"Collected the following knowledge items: \n{json.dumps(knowledge_items, indent=2)}"
+        )
 
         collection: chromadb.Collection = self._client.get_or_create_collection(
             name=collection,
             embedding_function=self._embedding_function,
         )
 
-        knowledge_items = knowledge_gatherer.get_items()
-
-        logging.debug(
+        logger.debug(
             f"Storing {len(knowledge_items)} items in collection: {collection}"
         )
 
@@ -74,15 +84,15 @@ class ChromaDB(BaseKnowledgeDB):
         documents: List[str] = []
         metadatas: List[Dict[str, str]] = []
 
-        for key, knowledge_item in knowledge_items.items():
-            logging.debug(
-                f"Pre-processing item: {key} in collection: {collection} with metadata: "
-                f"{knowledge_item.metadata} and content length: {len(knowledge_item.content)}"
-            )
+        for _, knowledge_item in knowledge_items.items():
+            logger.debug(f"Pre-processing item: {knowledge_item}")
 
-            document_ids.append(key)
+            metadata = knowledge_item.metadata
+            metadata[_DICT_KEY_SUMMARY] = knowledge_item.summary
+
+            document_ids.append(knowledge_item.id)
             documents.append(knowledge_item.content)
-            metadatas.append(knowledge_item.metadata)
+            metadatas.append(metadata)
 
         collection.add(
             ids=document_ids,
@@ -90,7 +100,7 @@ class ChromaDB(BaseKnowledgeDB):
             metadatas=metadatas,
         )
 
-        logging.debug(
+        logger.debug(
             f"Stored {len(document_ids)} items in collection: "
             f"{collection} with document IDs: {document_ids}"
         )
@@ -111,7 +121,7 @@ class ChromaDB(BaseKnowledgeDB):
         Returns:
             List[KnowledgeItem]: The search results as a list of KnowledgeItem objects.
         """
-        logging.debug(f"Searching collection: {collection} with query: {query}")
+        logger.debug(f"Searching collection: {collection} with query: {query}")
 
         collection: chromadb.Collection = self._client.get_or_create_collection(
             name=collection,
@@ -124,14 +134,21 @@ class ChromaDB(BaseKnowledgeDB):
             n_results=num_results,
         )
 
+        ids = result["ids"][0]
         documents = result["documents"][0]
         metadatas = result["metadatas"][0]
         knowledge_items: List[KnowledgeItem] = []
 
         for i in range(len(documents)):
+            summary = ""
+            if _DICT_KEY_SUMMARY in metadatas[i]:
+                summary = metadatas[i].pop(_DICT_KEY_SUMMARY, "")
+
             knowledge_items.append(
                 KnowledgeItem(
+                    id=ids[i],
                     content=documents[i],
+                    summary=summary,
                     metadata=metadatas[i],
                 )
             )

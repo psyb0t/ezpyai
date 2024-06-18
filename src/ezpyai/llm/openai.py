@@ -1,9 +1,9 @@
 import os
-import logging
 import ezpyai.llm.exceptions as exceptions
 
 from typing import Annotated
 from openai import OpenAI as _OpenAI
+from ezpyai._logger import logger
 from ezpyai.llm._llm import BaseLLM
 from ezpyai.llm.prompt import Prompt
 
@@ -99,7 +99,7 @@ class OpenAI(BaseLLM):
         messages = self._prompt_to_messages(prompt)
 
         try:
-            logging.debug(f"Sending messages: {messages} to model {self._model}")
+            logger.debug(f"Sending messages: {messages} to model {self._model}")
 
             response = self._client.chat.completions.create(
                 model=self._model,
