@@ -67,9 +67,7 @@ class ChromaDB(BaseKnowledgeDB):
         knowledge_gatherer.gather(data_path)
         knowledge_items = knowledge_gatherer.get_items()
 
-        logger.debug(
-            f"Collected the following knowledge items: \n{json.dumps(knowledge_items, indent=2)}"
-        )
+        logger.debug(f"Collected knowlege items: {knowledge_items}")
 
         collection: chromadb.Collection = self._client.get_or_create_collection(
             name=collection,

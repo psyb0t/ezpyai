@@ -16,7 +16,7 @@ from docx import Document
 from ezpyai._logger import logger
 from ezpyai._constants import _DICT_KEY_SUMMARY
 from ezpyai.llm._llm import LLM
-from ezpyai.llm.prompt import Prompt, SUMMARIZER_SYSTEM_MESSAGE
+from ezpyai.llm.prompt import Prompt, get_summarizer_prompt
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 _MIMETYPE_TEXT = "text/plain"
@@ -42,6 +42,7 @@ class KnowledgeGatherer:
     Attributes:
         _items (Dict[str, KnowledgeItem]): A dictionary containing file paths
         and their processed content indexed by SHA256 hashes of the content.
+        _summarizer (LLM): The LLM summarizer to use for knowledge collection.
     """
 
     def __init__(self, summarizer: LLM = None) -> None:
@@ -81,7 +82,7 @@ class KnowledgeGatherer:
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         file_ext = os.path.splitext(file_path)[1]
 
-        return KnowledgeItem(
+        knowledge_item = KnowledgeItem(
             id=id,
             content=paragraph,
             metadata={
@@ -92,7 +93,17 @@ class KnowledgeGatherer:
             },
         )
 
+        self._summarize(knowledge_item)
+
+        return knowledge_item
+
     def _summarize(self, knowledge_item: KnowledgeItem) -> None:
+        """
+        Summarize the given knowledge item.
+
+        Args:
+            knowledge_item (KnowledgeItem): The knowledge item to summarize.
+        """
         if self._summarizer is None:
             return ""
 
@@ -101,10 +112,7 @@ class KnowledgeGatherer:
 
         logger.debug(f"Summarizing knowledge item: {knowledge_item}")
 
-        prompt: Prompt = Prompt(
-            system_message=SUMMARIZER_SYSTEM_MESSAGE,
-            user_message=f"Summarize the following text: {knowledge_item.content}",
-        )
+        prompt: Prompt = get_summarizer_prompt(knowledge_item.content)
 
         knowledge_item.summary = self._summarizer.get_structured_response(
             prompt, response_format={_DICT_KEY_SUMMARY: ""}
@@ -192,8 +200,6 @@ class KnowledgeGatherer:
                 paragraph=paragraph,
                 paragraph_number=paragraph_counter,
             )
-
-            self._summarize(knowledge_item)
 
             self._items[knowledge_item.id] = knowledge_item
 

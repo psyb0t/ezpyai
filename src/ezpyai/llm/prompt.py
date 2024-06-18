@@ -9,6 +9,15 @@ Whenever a user gives you a chunk of text, you will respond with a summary of th
 
 
 class Prompt:
+    """
+    A class to store prompt data.
+
+    Attributes:
+        system_message (str): The system message of the prompt.
+        user_message (str): The user message of the prompt.
+        context (List[str]): The context of the prompt.
+    """
+
     def __init__(
         self,
         user_message: str,
@@ -60,3 +69,20 @@ class Prompt:
 
     def set_user_message(self, user_message: str) -> None:
         self._user_message = user_message
+
+
+def get_summarizer_prompt(to_summarize: str) -> Prompt:
+    """
+    Get a prompt for summarizing the given text.
+
+    Args:
+        to_summarize (str): The text to summarize.
+
+    Returns:
+        Prompt: The prompt for summarizing the text.
+    """
+
+    return Prompt(
+        system_message=SUMMARIZER_SYSTEM_MESSAGE,
+        user_message=f"Summarize the following text: {to_summarize}",
+    )
