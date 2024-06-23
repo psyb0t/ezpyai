@@ -1,11 +1,10 @@
 import chromadb
-import json
 import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
 from ezpyai._logger import logger
 from ezpyai._constants import _DICT_KEY_SUMMARY
-from ezpyai.llm._llm import LLM
+from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.knowledge._knowledge_db import BaseKnowledgeDB
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
@@ -50,13 +49,16 @@ class ChromaDB(BaseKnowledgeDB):
 
         self._client.reset()
 
-    def store(self, collection: str, data_path: str, summarizer: LLM = None) -> None:
+    def store(
+        self, collection: str, data_path: str, summarizer: LLMProvider = None
+    ) -> None:
         """
         Store the data in the given collection.
 
         Args:
             collection (str): The name of the collection.
             data_path (str): The path to the data.
+            summarizer (LLMProvider): The LLMProvider summarizer to use for knowledge collection.
         """
         logger.debug(f"Storing data in collection: {collection} from: {data_path}")
 

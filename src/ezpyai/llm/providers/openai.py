@@ -4,7 +4,7 @@ import ezpyai.llm.exceptions as exceptions
 from typing import Annotated
 from openai import OpenAI as _OpenAI
 from ezpyai._logger import logger
-from ezpyai.llm._llm import BaseLLM
+from ezpyai.llm.providers._llm_provider import BaseLLMProvider
 from ezpyai.llm.prompt import Prompt
 
 
@@ -46,7 +46,7 @@ _DEFAULT_TEMPERATURE: float = 0.5
 _DEFAULT_MAX_TOKENS: int = 150
 
 
-class OpenAI(BaseLLM):
+class LLMProviderOpenAI(BaseLLMProvider):
     def __init__(
         self,
         model: str = _DEFAULT_MODEL,

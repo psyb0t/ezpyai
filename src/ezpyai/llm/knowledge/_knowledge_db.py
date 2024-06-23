@@ -1,6 +1,6 @@
 from typing import List
 from abc import ABC, abstractmethod
-from ezpyai.llm._llm import LLM
+from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
 
@@ -43,8 +43,17 @@ class BaseKnowledgeDB(KnowledgeDB):
     def destroy(self) -> None:
         pass
 
-    def store(self, collection: str, data_path: str) -> None:
+    def store(
+        self,
+        collection: str,
+        data_path: str,
+        summarizer: LLMProvider = None,
+    ) -> None:
         pass
 
-    def search(self, collection: str, query: str) -> List[KnowledgeItem]:
+    def search(
+        self,
+        collection: str,
+        query: str,
+    ) -> List[KnowledgeItem]:
         pass

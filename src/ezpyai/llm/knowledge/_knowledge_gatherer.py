@@ -15,7 +15,7 @@ from PyPDF2 import PdfReader
 from docx import Document
 from ezpyai._logger import logger
 from ezpyai._constants import _DICT_KEY_SUMMARY
-from ezpyai.llm._llm import LLM
+from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.prompt import Prompt, get_summarizer_prompt
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
 
@@ -31,6 +31,7 @@ _MIMETYPE_HTML = "text/html"
 _MIMETYPE_XML = "text/xml"
 
 
+# TODO: implement semantic chunking
 class KnowledgeGatherer:
     """
     A class to gather knowledge from files within a directory or from a single file.
@@ -40,16 +41,15 @@ class KnowledgeGatherer:
     It adds each file's data to the _items dictionary with its SHA256 hash as the key.
 
     Attributes:
-        _items (Dict[str, KnowledgeItem]): A dictionary containing file paths
-        and their processed content indexed by SHA256 hashes of the content.
-        _summarizer (LLM): The LLM summarizer to use for knowledge collection.
+        _items (Dict[str, KnowledgeItem]): A dictionary of KnowledgeItem objects indexed by SHA256 hashes of their content.
+        _summarizer (LLMProvider): The LLMProvider hosting the summarizer model to use for knowledge collection.
     """
 
-    def __init__(self, summarizer: LLM = None) -> None:
+    def __init__(self, summarizer: LLMProvider = None) -> None:
         """Initialize the KnowledgeGatherer with an empty _items dictionary."""
 
         self._items: Dict[str, KnowledgeItem] = {}
-        self._summarizer: LLM = summarizer
+        self._summarizer: LLMProvider = summarizer
 
         logger.debug("KnowledgeGatherer initialized with an empty _items dictionary.")
 

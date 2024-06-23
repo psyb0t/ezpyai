@@ -9,7 +9,7 @@ _STRUCTURED_RESPONSE_OUTPUT_INSTRUCTIONS = (
 )
 
 
-class LLM(ABC):
+class LLMProvider(ABC):
     @abstractmethod
     def get_response(self, prompt: Prompt) -> str:
         pass
@@ -25,7 +25,7 @@ class LLM(ABC):
         pass
 
 
-class BaseLLM(LLM):
+class BaseLLMProvider(LLMProvider):
     def get_response(self, _: Prompt) -> str:
         return ""
 
