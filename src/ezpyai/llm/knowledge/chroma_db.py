@@ -3,7 +3,7 @@ import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
 from ezpyai._logger import logger
-from ezpyai._constants import _DICT_KEY_SUMMARY
+from ezpyai._constants import DICT_KEY_SUMMARY
 from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.knowledge._knowledge_db import BaseKnowledgeDB
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer
@@ -88,7 +88,7 @@ class ChromaDB(BaseKnowledgeDB):
             logger.debug(f"Pre-processing item: {knowledge_item}")
 
             metadata = knowledge_item.metadata
-            metadata[_DICT_KEY_SUMMARY] = knowledge_item.summary
+            metadata[DICT_KEY_SUMMARY] = knowledge_item.summary
 
             document_ids.append(knowledge_item.id)
             documents.append(knowledge_item.content)
@@ -141,8 +141,8 @@ class ChromaDB(BaseKnowledgeDB):
 
         for i in range(len(documents)):
             summary = ""
-            if _DICT_KEY_SUMMARY in metadatas[i]:
-                summary = metadatas[i].pop(_DICT_KEY_SUMMARY, "")
+            if DICT_KEY_SUMMARY in metadatas[i]:
+                summary = metadatas[i].pop(DICT_KEY_SUMMARY, "")
 
             knowledge_items.append(
                 KnowledgeItem(

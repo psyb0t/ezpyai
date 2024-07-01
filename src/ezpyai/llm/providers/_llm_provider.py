@@ -20,10 +20,6 @@ class LLMProvider(ABC):
     ) -> Union[List, Dict]:
         pass
 
-    @abstractmethod
-    def remove_artifacts(self, response: str) -> str:
-        pass
-
 
 class BaseLLMProvider(LLMProvider):
     def get_response(self, _: Prompt) -> str:

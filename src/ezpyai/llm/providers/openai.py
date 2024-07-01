@@ -7,6 +7,12 @@ from ezpyai._logger import logger
 from ezpyai.llm.providers._llm_provider import BaseLLMProvider
 from ezpyai.llm.prompt import Prompt
 
+from ezpyai._constants import (
+    ENV_VAR_NAME_OPENAI_API_KEY,
+    ENV_VAR_NAME_OPENAI_ORGANIZATION,
+    ENV_VAR_NAME_OPENAI_PROJECT,
+)
+
 
 # Constants for OpenAI GPT models with context window sizes and specific versions
 MODEL_GPT_4O: str = (
@@ -47,15 +53,25 @@ _DEFAULT_MAX_TOKENS: int = 150
 
 
 class LLMProviderOpenAI(BaseLLMProvider):
+
     def __init__(
         self,
         model: str = _DEFAULT_MODEL,
         temperature: float = _DEFAULT_TEMPERATURE,
         max_tokens: int = _DEFAULT_MAX_TOKENS,
-        api_key: str = os.getenv("OPENAI_API_KEY"),
-        organization: str = os.getenv("OPENAI_ORGANIZATION"),
-        project: str = os.getenv("OPENAI_PROJECT"),
+        api_key: str = None,
+        organization: str = None,
+        project: str = None,
     ) -> None:
+        if api_key is None:
+            api_key = os.getenv(ENV_VAR_NAME_OPENAI_API_KEY)
+
+        if organization is None:
+            organization = os.getenv(ENV_VAR_NAME_OPENAI_ORGANIZATION)
+
+        if project is None:
+            project = os.getenv(ENV_VAR_NAME_OPENAI_PROJECT)
+
         self._client = _OpenAI(
             api_key=api_key,
             organization=organization,

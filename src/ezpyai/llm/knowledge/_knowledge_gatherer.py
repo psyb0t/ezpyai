@@ -14,7 +14,7 @@ from typing import Dict
 from PyPDF2 import PdfReader
 from docx import Document
 from ezpyai._logger import logger
-from ezpyai._constants import _DICT_KEY_SUMMARY
+from ezpyai._constants import DICT_KEY_SUMMARY
 from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.prompt import Prompt, get_summarizer_prompt
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
@@ -45,7 +45,12 @@ class KnowledgeGatherer:
     """
 
     def __init__(self, summarizer: LLMProvider = None) -> None:
-        """Initialize the KnowledgeGatherer with an empty _items dictionary."""
+        """
+        Initialize the KnowledgeGatherer with an empty _items dictionary.
+
+        Args:
+            summarizer (LLMProvider, optional): The LLMProvider hosting the summarizer model to use for knowledge collection. Defaults to None.
+        """
 
         self._items: Dict[str, KnowledgeItem] = {}
         self._summarizer: LLMProvider = summarizer
@@ -114,8 +119,8 @@ class KnowledgeGatherer:
         prompt: Prompt = get_summarizer_prompt(knowledge_item.content)
 
         knowledge_item.summary = self._summarizer.get_structured_response(
-            prompt, response_format={_DICT_KEY_SUMMARY: ""}
-        )[_DICT_KEY_SUMMARY]
+            prompt, response_format={DICT_KEY_SUMMARY: ""}
+        )[DICT_KEY_SUMMARY]
 
         logger.debug(f"Summarized knowledge item: {knowledge_item}")
 

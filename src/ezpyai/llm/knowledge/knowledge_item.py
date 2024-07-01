@@ -1,9 +1,9 @@
 from typing import Dict
 from ezpyai._constants import (
-    _DICT_KEY_ID,
-    _DICT_KEY_METADATA,
-    _DICT_KEY_CONTENT,
-    _DICT_KEY_SUMMARY,
+    DICT_KEY_ID,
+    DICT_KEY_METADATA,
+    DICT_KEY_CONTENT,
+    DICT_KEY_SUMMARY,
 )
 
 
@@ -38,8 +38,8 @@ class KnowledgeItem:
 
     def to_dict(self) -> Dict[str, str]:
         return {
-            _DICT_KEY_ID: self.id,
-            _DICT_KEY_METADATA: self.metadata,
-            _DICT_KEY_CONTENT: self.content,
-            _DICT_KEY_SUMMARY: self.summary,
+            DICT_KEY_ID: self.id,
+            DICT_KEY_METADATA: self.metadata,
+            DICT_KEY_CONTENT: self.content,
+            DICT_KEY_SUMMARY: self.summary,
         }
