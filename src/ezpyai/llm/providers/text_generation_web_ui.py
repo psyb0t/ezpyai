@@ -1,5 +1,4 @@
 import os
-from sys import api_version
 
 import openai
 from openai import OpenAI
@@ -19,6 +18,8 @@ class LLMProviderTextGenerationWebUI(LLMProviderOpenAI):
     LLM provider for Text Generation Web UI's OpenAI compatible API.
     """
 
+    _loaded_model: str = None
+
     def __init__(
         self,
         model: str,
@@ -27,7 +28,6 @@ class LLMProviderTextGenerationWebUI(LLMProviderOpenAI):
         max_tokens: int = _DEFAULT_MAX_TOKENS,
         api_key: str = os.getenv(_ENV_VAR_NAME_TEXT_GENERATION_WEBUI_API_KEY),
     ) -> None:
-        openai.api_version = "2023-05-15"
         self._client = OpenAI(
             base_url=base_url,
             api_key=api_key,

@@ -20,27 +20,11 @@ Boom! You're ready to rock.
 
 ## Usage
 
-Here's a quick primer on how to use `ezpyai`. It's so simple, your pet hamster could do it (assuming it's a really smart hamster).
-
-```python
-from ezpyai.llm import OpenAI, Prompt
-
-# Initialize the OpenAI client
-ai_client = OpenAI(api_key="your_openai_api_key")
-
-# Create a prompt
-prompt = Prompt(user_message="Hello, world!")
-
-# Get a response from the model
-response = ai_client.get_response(prompt)
-print(response)
-```
-
-See? Easy peasy, lemon squeezy.
+TODO
 
 ## Documentation
 
-Want to dive deeper? Check out our [documentation](https://github.com/psyb0t/ezpyai). It's packed with everything you need to become an AI rockstar.
+TODO
 
 ## Contributing
 
@@ -52,8 +36,11 @@ We love contributions like hackers love caffeine. Found a bug? Have a brilliant 
 
 ## Development notes
 
-This project uses [ez-pre-commit](https://github.com/psyb0t/ez-pre-commit) so you need to install `ez-pre-commit` on your device and then run
+TODO
 
-```bash
-ez-pre-commit install
-```
+## TODO
+
+- knowledge gatherer - implement semantic chunking
+- prompt - add prompt enhancer
+- prompt - add prompt compression using LLMLingua
+- llm provider - optionally use NuExtract text to json model to get structured response(like instead of embedding the instruction to the base llm, take the resp and send it to nuextract)

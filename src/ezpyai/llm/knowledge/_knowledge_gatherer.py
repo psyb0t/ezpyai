@@ -31,7 +31,6 @@ _MIMETYPE_HTML = "text/html"
 _MIMETYPE_XML = "text/xml"
 
 
-# TODO: implement semantic chunking
 class KnowledgeGatherer:
     """
     A class to gather knowledge from files within a directory or from a single file.
