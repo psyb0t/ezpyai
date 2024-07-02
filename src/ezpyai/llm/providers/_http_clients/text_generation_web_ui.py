@@ -19,19 +19,19 @@ class HTTPClientTextGenerationWebUI:
     """
 
     # Endpoint constants
-    ENDPOINT_ENCODE = "/v1/internal/encode"
-    ENDPOINT_DECODE = "/v1/internal/decode"
-    ENDPOINT_TOKEN_COUNT = "/v1/internal/token-count"
-    ENDPOINT_LOGITS = "/v1/internal/logits"
-    ENDPOINT_CHAT_PROMPT = "/v1/internal/chat-prompt"
-    ENDPOINT_STOP_GENERATION = "/v1/internal/stop-generation"
-    ENDPOINT_MODEL_INFO = "/v1/internal/model/info"
-    ENDPOINT_MODEL_LIST = "/v1/internal/model/list"
-    ENDPOINT_MODEL_LOAD = "/v1/internal/model/load"
-    ENDPOINT_MODEL_UNLOAD = "/v1/internal/model/unload"
-    ENDPOINT_LORA_LIST = "/v1/internal/lora/list"
-    ENDPOINT_LORA_LOAD = "/v1/internal/lora/load"
-    ENDPOINT_LORA_UNLOAD = "/v1/internal/lora/unload"
+    _ENDPOINT_ENCODE = "/v1/internal/encode"
+    _ENDPOINT_DECODE = "/v1/internal/decode"
+    _ENDPOINT_TOKEN_COUNT = "/v1/internal/token-count"
+    _ENDPOINT_LOGITS = "/v1/internal/logits"
+    _ENDPOINT_CHAT_PROMPT = "/v1/internal/chat-prompt"
+    _ENDPOINT_STOP_GENERATION = "/v1/internal/stop-generation"
+    _ENDPOINT_MODEL_INFO = "/v1/internal/model/info"
+    _ENDPOINT_MODEL_LIST = "/v1/internal/model/list"
+    _ENDPOINT_MODEL_LOAD = "/v1/internal/model/load"
+    _ENDPOINT_MODEL_UNLOAD = "/v1/internal/model/unload"
+    _ENDPOINT_LORA_LIST = "/v1/internal/lora/list"
+    _ENDPOINT_LORA_LOAD = "/v1/internal/lora/load"
+    _ENDPOINT_LORA_UNLOAD = "/v1/internal/lora/unload"
 
     def __init__(self, base_url: str, api_key: str):
         """
@@ -48,7 +48,7 @@ class HTTPClientTextGenerationWebUI:
 
         self.base_url = base_url
         self.headers = {
-            HTTP_HEADER_AUTHORIZATION: api_key,
+            HTTP_HEADER_AUTHORIZATION: f"Bearer {api_key}",
             HTTP_HEADER_CONTENT_TYPE: HTTP_CONTENT_TYPE_JSON,
         }
 
@@ -95,7 +95,7 @@ Content: {response.content}
         """
 
         return self._make_request(
-            HTTP_METHOD_POST, self.ENDPOINT_ENCODE, {"text": text}
+            HTTP_METHOD_POST, self._ENDPOINT_ENCODE, {"text": text}
         )
 
     def decode_tokens(self, tokens: List[int]) -> Dict[str, str]:
@@ -110,7 +110,7 @@ Content: {response.content}
         """
 
         return self._make_request(
-            HTTP_METHOD_POST, self.ENDPOINT_DECODE, {"tokens": tokens}
+            HTTP_METHOD_POST, self._ENDPOINT_DECODE, {"tokens": tokens}
         )
 
     def count_tokens(self, text: str) -> Dict[str, int]:
@@ -125,7 +125,7 @@ Content: {response.content}
         """
 
         return self._make_request(
-            HTTP_METHOD_POST, self.ENDPOINT_TOKEN_COUNT, {"text": text}
+            HTTP_METHOD_POST, self._ENDPOINT_TOKEN_COUNT, {"text": text}
         )
 
     def get_logits(self, prompt: str, **kwargs: Any) -> Dict[str, Dict[str, float]]:
@@ -142,7 +142,7 @@ Content: {response.content}
 
         data = {"prompt": prompt, **kwargs}
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_LOGITS, data)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_LOGITS, data)
 
     def get_chat_prompt(
         self, messages: List[Dict[str, Any]], **kwargs: Any
@@ -160,7 +160,7 @@ Content: {response.content}
 
         data = {"messages": messages, **kwargs}
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_CHAT_PROMPT, data)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_CHAT_PROMPT, data)
 
     def stop_generation(self) -> str:
         """
@@ -170,7 +170,7 @@ Content: {response.content}
             str: A string indicating the result of the operation.
         """
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_STOP_GENERATION)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_STOP_GENERATION)
 
     def get_model_info(self) -> Dict[str, Union[str, List[str]]]:
         """
@@ -180,7 +180,7 @@ Content: {response.content}
             Dict[str, Union[str, List[str]]]: A dictionary containing model information.
         """
 
-        return self._make_request(HTTP_METHOD_GET, self.ENDPOINT_MODEL_INFO)
+        return self._make_request(HTTP_METHOD_GET, self._ENDPOINT_MODEL_INFO)
 
     def list_models(self) -> List[str]:
         """
@@ -190,7 +190,7 @@ Content: {response.content}
             List[str]: A list of model names.
         """
 
-        return self._make_request(HTTP_METHOD_GET, self.ENDPOINT_MODEL_LIST)[
+        return self._make_request(HTTP_METHOD_GET, self._ENDPOINT_MODEL_LIST)[
             "model_names"
         ]
 
@@ -218,7 +218,7 @@ Content: {response.content}
             "settings": settings or {},
         }
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_MODEL_LOAD, data)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_MODEL_LOAD, data)
 
     def unload_model(self) -> str:
         """
@@ -228,31 +228,33 @@ Content: {response.content}
             str: A string indicating the result of the operation.
         """
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_MODEL_UNLOAD)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_MODEL_UNLOAD)
 
-    def list_loras(self) -> Dict[str, List[str]]:
+    def list_loras(self) -> List[str]:
         """
         Get a list of available LoRA adapters.
 
         Returns:
-            Dict[str, List[str]]: A dictionary containing a list of LoRA names.
+            List[str]: A list of LoRA adapter names.
         """
 
-        return self._make_request(HTTP_METHOD_GET, self.ENDPOINT_LORA_LIST)
+        return self._make_request(HTTP_METHOD_GET, self._ENDPOINT_LORA_LIST)[
+            "lora_names"
+        ]
 
-    def load_loras(self, lora_names: List[str]) -> str:
+    def load_loras(self, loras: List[str]) -> str:
         """
         Load specific LoRA adapters.
 
         Args:
-            lora_names (List[str]): A list of LoRA adapter names to load.
+            loras (List[str]): A list of LoRA adapter names to load.
 
         Returns:
             str: A string indicating the result of the operation.
         """
 
         return self._make_request(
-            HTTP_METHOD_POST, self.ENDPOINT_LORA_LOAD, {"lora_names": lora_names}
+            HTTP_METHOD_POST, self._ENDPOINT_LORA_LOAD, {"lora_names": loras}
         )
 
     def unload_loras(self) -> str:
@@ -263,4 +265,4 @@ Content: {response.content}
             str: A string indicating the result of the operation.
         """
 
-        return self._make_request(HTTP_METHOD_POST, self.ENDPOINT_LORA_UNLOAD)
+        return self._make_request(HTTP_METHOD_POST, self._ENDPOINT_LORA_UNLOAD)

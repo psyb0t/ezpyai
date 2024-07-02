@@ -1,7 +1,9 @@
 import json
 from abc import ABC, abstractmethod
-from ezpyai.llm.prompt import Prompt
 from typing import Union, Dict, List, Any
+
+from ezpyai.llm.prompt import Prompt
+from ezpyai.llm.providers.exceptions import JSONParseError
 
 
 _STRUCTURED_RESPONSE_OUTPUT_INSTRUCTIONS = (
@@ -22,12 +24,40 @@ class LLMProvider(ABC):
 
 
 class BaseLLMProvider(LLMProvider):
+    """
+    Base class for LLM providers.
+    """
+
+    @abstractmethod
     def get_response(self, _: Prompt) -> str:
+        """
+        Get the response for the given prompt.
+
+        Args:
+            prompt (Prompt): The input prompt.
+
+        Returns:
+            str: The response.
+        """
+
         return ""
 
     def _validate_response_format(
         self, data: Any, response_format: Union[Dict, List]
     ) -> bool:
+        """
+        Validate the response format.
+
+        Args:
+            data (Any): The data to validate.
+            response_format (Union[Dict, List]): The response format.
+
+        Returns:
+            bool: True if the response format is valid, False otherwise.
+        """
+
+        if not response_format:
+            return True
         if isinstance(response_format, dict):
             if not isinstance(data, dict):
                 return False
@@ -44,6 +74,16 @@ class BaseLLMProvider(LLMProvider):
             )
 
     def remove_artifacts(self, response: str) -> str:
+        """
+        Remove artifacts from the response.
+
+        Args:
+            response (str): The response to remove artifacts from.
+
+        Returns:
+            str: The response without artifacts.
+        """
+
         artifacts = ["```json", "```"]
         for artifact in artifacts:
             response = response.replace(artifact, "")
@@ -53,6 +93,19 @@ class BaseLLMProvider(LLMProvider):
     def get_structured_response(
         self, prompt: Prompt, response_format: Union[List, Dict]
     ) -> Union[List, Dict]:
+        """
+        Get the structured response for the given prompt.
+
+        Args:
+            prompt (Prompt): The input prompt.
+            response_format (Union[Dict, List]): The response format.
+
+        Returns:
+            Union[List, Dict]: The structured response.
+
+        Raises:
+            JSONParseError: If the response cannot be parsed as JSON.
+        """
         prompt = Prompt(
             user_message=prompt.get_user_message(),
             context=prompt.get_context(),
@@ -61,7 +114,11 @@ class BaseLLMProvider(LLMProvider):
 
         response = self.remove_artifacts(self.get_response(prompt)).strip()
 
-        structured_resp = json.loads(response)
+        try:
+            structured_resp = json.loads(response)
+        except:
+            raise JSONParseError(f"Failed to parse structured response: {response}")
+
         if self._validate_response_format(structured_resp, response_format):
             return structured_resp
 
