@@ -43,5 +43,6 @@ TODO
 - knowledge gatherer - implement semantic chunking
 - prompt - add prompt enhancer
 - prompt - add prompt compression using LLMLingua
+- prompt - add history support
 - llm provider - optionally use NuExtract text to json model to get structured response(like instead of embedding the instruction to the base llm, take the resp and send it to nuextract)
 - llm provider - text generation web ui - support multiple instances hosted in diff locations
