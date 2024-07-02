@@ -106,6 +106,7 @@ class BaseLLMProvider(LLMProvider):
         Raises:
             JSONParseError: If the response cannot be parsed as JSON.
         """
+
         prompt = Prompt(
             user_message=prompt.get_user_message(),
             context=prompt.get_context(),
