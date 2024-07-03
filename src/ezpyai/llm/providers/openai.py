@@ -1,11 +1,16 @@
 import os
-import ezpyai.llm.exceptions as exceptions
 
-from typing import Annotated
+from typing import List, Dict
 from openai import OpenAI as _OpenAI
 from ezpyai._logger import logger
 from ezpyai.llm.providers._llm_provider import BaseLLMProvider
 from ezpyai.llm.prompt import Prompt
+
+from ezpyai.exceptions import (
+    PromptUserMessageMissingError,
+    LLMInferenceError,
+    LLMResponseEmptyError,
+)
 
 from ezpyai._constants import (
     ENV_VAR_NAME_OPENAI_API_KEY,
@@ -91,9 +96,7 @@ class LLMProviderOpenAI(BaseLLMProvider):
     def _get_user_message(self, message: str) -> dict:
         return {"role": "user", "content": message}
 
-    def _prompt_to_messages(
-        self, prompt: Prompt
-    ) -> Annotated[list[dict], "Raises exceptions.NoUserMessage"]:
+    def _prompt_to_messages(self, prompt: Prompt) -> List[Dict]:
         messages = []
         if prompt.has_system_message():
             messages.append(self._get_system_message(prompt.get_system_message()))
@@ -102,16 +105,13 @@ class LLMProviderOpenAI(BaseLLMProvider):
             messages.append(self._get_user_message(prompt.get_context_as_string()))
 
         if not prompt.has_user_message():
-            raise exceptions.NoUserMessage()
+            raise PromptUserMessageMissingError()
 
         messages.append(self._get_user_message(prompt.get_user_message()))
 
         return messages
 
-    def get_response(self, prompt: Prompt) -> Annotated[
-        str,
-        "Raises exceptions.NoUserMessage, exceptions.NoLLMResponseMessage, exceptions.InvokeError",
-    ]:
+    def get_response(self, prompt: Prompt) -> str:
         messages = self._prompt_to_messages(prompt)
 
         try:
@@ -124,9 +124,9 @@ class LLMProviderOpenAI(BaseLLMProvider):
                 messages=messages,
             )
         except Exception as e:
-            raise exceptions.InvokeError() from e
+            raise LLMInferenceError() from e
 
         if not response.choices:
-            raise exceptions.NoLLMResponseMessage()
+            raise LLMResponseEmptyError()
 
         return response.choices[0].message.content

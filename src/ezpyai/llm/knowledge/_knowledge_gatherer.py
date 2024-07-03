@@ -7,7 +7,12 @@ import shutil
 import hashlib
 import pandas as pd
 import xml.etree.ElementTree as ET
-import ezpyai.exceptions as exceptions
+
+from ezpyai.exceptions import (
+    UnsupportedFileTypeError,
+    FileReadError,
+    FileProcessingError,
+)
 
 from bs4 import BeautifulSoup
 from typing import Dict
@@ -184,13 +189,9 @@ class KnowledgeGatherer:
                 self._process_zip(file_path)
                 return
             else:
-                raise exceptions.UnsupportedFileTypeError(
-                    f"Unsupported file type for {file_path}"
-                )
+                raise UnsupportedFileTypeError(f"Unsupported file type for {file_path}")
         except Exception as e:
-            raise exceptions.FileReadError(
-                f"Error reading {file_path}: {str(e)}"
-            ) from e
+            raise FileReadError(f"Error reading {file_path}: {str(e)}") from e
 
         paragraphs = content.split("\n")
         paragraph_counter = 1
@@ -235,7 +236,7 @@ class KnowledgeGatherer:
 
             self._process_directory(temp_dir)
         except Exception as e:
-            raise exceptions.FileProcessingError(
+            raise FileProcessingError(
                 f"Error processing ZIP file {zip_path}: {str(e)}"
             ) from e
         finally:
