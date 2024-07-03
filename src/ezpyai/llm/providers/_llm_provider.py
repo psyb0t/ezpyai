@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Union, Dict, List, Any
 
 from ezpyai.llm.prompt import Prompt
-from ezpyai.llm.providers.exceptions import JSONParseError
+from ezpyai.exceptions import JSONParseError
 
 
 _STRUCTURED_RESPONSE_OUTPUT_INSTRUCTIONS = (

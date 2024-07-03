@@ -7,7 +7,7 @@ import shutil
 import hashlib
 import pandas as pd
 import xml.etree.ElementTree as ET
-import ezpyai.llm.knowledge.exceptions as exceptions
+import ezpyai.exceptions as exceptions
 
 from bs4 import BeautifulSoup
 from typing import Dict
