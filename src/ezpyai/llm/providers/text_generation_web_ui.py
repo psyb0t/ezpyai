@@ -8,7 +8,7 @@ from ezpyai._constants import (
     ENV_VAR_NAME_TEXT_GENERATION_WEBUI_BASE_URL,
 )
 
-from ezpyai.llm.providers.exceptions import UnsupportedModelError, UnsupportedLoraError
+from ezpyai.exceptions import UnsupportedModelError, UnsupportedLoraError
 
 from ezpyai.llm.providers.openai import (
     LLMProviderOpenAI,
