@@ -3,7 +3,7 @@ import chromadb.utils.embedding_functions as ef
 
 from typing import Dict, List
 from ezpyai._logger import logger
-from ezpyai._constants import DICT_KEY_SUMMARY
+from ezpyai.constants._constants import DICT_KEY_SUMMARY
 from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.knowledge._knowledge_db import BaseKnowledgeDB
 from ezpyai.llm.knowledge._knowledge_gatherer import KnowledgeGatherer

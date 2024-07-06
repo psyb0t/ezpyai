@@ -3,7 +3,7 @@ import os
 from openai import OpenAI
 from typing import List
 
-from ezpyai._constants import (
+from ezpyai.constants._constants import (
     ENV_VAR_NAME_TEXT_GENERATION_WEBUI_API_KEY,
     ENV_VAR_NAME_TEXT_GENERATION_WEBUI_BASE_URL,
 )

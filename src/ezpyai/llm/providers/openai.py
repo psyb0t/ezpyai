@@ -12,7 +12,7 @@ from ezpyai.exceptions import (
     LLMResponseEmptyError,
 )
 
-from ezpyai._constants import (
+from ezpyai.constants._constants import (
     ENV_VAR_NAME_OPENAI_API_KEY,
     ENV_VAR_NAME_OPENAI_ORGANIZATION,
     ENV_VAR_NAME_OPENAI_PROJECT,

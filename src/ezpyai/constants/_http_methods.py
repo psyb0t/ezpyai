@@ -1,0 +1,2 @@
+HTTP_METHOD_GET: str = "GET"
+HTTP_METHOD_POST: str = "POST"

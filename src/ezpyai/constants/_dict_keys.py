@@ -1,0 +1,6 @@
+DICT_KEY_ID: str = "id"
+DICT_KEY_METADATA: str = "metadata"
+DICT_KEY_CONTENT: str = "content"
+DICT_KEY_SUMMARY: str = "summary"
+DICT_KEY_FROM: str = "from"
+DICT_KEY_VALUE: str = "value"

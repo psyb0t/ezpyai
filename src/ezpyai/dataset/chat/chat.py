@@ -1,6 +1,5 @@
-from typing import List, Dict
-
-from ezpyai._constants import DICT_KEY_FROM, DICT_KEY_VALUE
+from typing import List
+from ezpyai.dataset.chat.sources.telegram import DatasetSourceTelegram
 
 
 class DatasetChatEntry:
@@ -23,16 +22,6 @@ class DatasetChatEntry:
         self.role: str = role
         self.content: str = content
 
-    def to_sharegpt(self) -> Dict[str, str]:
-        """
-        Convert the DatasetChatEntry object to a ShareGPT style dictionary.
-
-        Returns:
-            Dict[str, str]: A dictionary containing the role and content of the chat entry.
-        """
-
-        return {DICT_KEY_FROM: self.role, DICT_KEY_VALUE: self.content}
-
 
 class DatasetChat:
     """
@@ -49,12 +38,12 @@ class DatasetChat:
 
         self.entries: List[DatasetChatEntry] = []
 
-    def to_sharegpt(self) -> List[Dict[str, str]]:
+    def from_telegram_json_export_file(json_export_file_path: str):
         """
-        Convert the DatasetChat object to a list of ShareGPT style dictionaries.
+        Create a DatasetChat object from a Telegram export file.
 
-        Returns:
-            List[Dict[str, str]]: A list of dictionaries containing the role and content of the chat entries as a ShareGPT style dictionary.
+        Args:
+            json_export_file_path (str): The path to the Telegram export file.
         """
 
-        return [entry.to_sharegpt() for entry in self.entries]
+        source: DatasetSourceTelegram = DatasetSourceTelegram(json_export_file_path)

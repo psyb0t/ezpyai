@@ -2,7 +2,7 @@ import requests
 
 from typing import List, Dict, Any, Optional, Union
 
-from ezpyai._constants import (
+from ezpyai.constants._constants import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
     HTTP_CONTENT_TYPE_JSON,
