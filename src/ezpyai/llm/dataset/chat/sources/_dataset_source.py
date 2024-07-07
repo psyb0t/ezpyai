@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ezpyai.dataset.chat import DatasetChat
+from ezpyai.llm.dataset.chat import DatasetChat
 
 
 class DatasetSource(ABC):

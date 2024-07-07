@@ -6,8 +6,8 @@ from jinja2 import Template
 
 from ezpyai._logger import logger
 from ezpyai.exceptions import FileNotFoundError, JSONParseError
-from ezpyai.dataset.chat.sources._dataset_source import DatasetSource
-from ezpyai.dataset.chat import DatasetChat, DatasetChatEntry
+from ezpyai.llm.dataset.chat.sources._dataset_source import DatasetSource
+from ezpyai.llm.dataset.chat import DatasetChat, DatasetChatEntry
 
 from ezpyai.constants import (
     DICT_KEY_CHATS,
@@ -25,7 +25,6 @@ from ezpyai.constants import (
     DICT_KEY_FROM_ID,
     NAME_UNKNOWN,
     CHAT_ID_TELEGRAM,
-    CHAT_ROLE_SYSTEM,
     CHAT_ROLE_USER,
     CHAT_ROLE_ASSISTANT,
 )
@@ -275,18 +274,18 @@ class DatasetSourceTelegram(DatasetSource):
 
         for chat in chats:
             dataset_chat_entries: List[DatasetChatEntry] = []
-            system_message_is_set = False
-            for message in chat.messages:
-                if not system_message_is_set and system_message_tpl:
+            system_message: str = ""
+
+            if system_message_tpl:
+                user_message: _TelegramChatMessage | None = (
+                    self._get_user_message_from_chat(chat)
+                )
+
+                if user_message:
                     template = Template(system_message_tpl)
-                    content = template.render(chat=chat, message=message)
+                    system_message = template.render(chat=chat, message=user_message)
 
-                    dataset_chat_entries.append(
-                        DatasetChatEntry(role=CHAT_ROLE_SYSTEM, content=content)
-                    )
-
-                    system_message_is_set = True
-
+            for message in chat.messages:
                 role: str = CHAT_ROLE_USER
                 if message.from_id == self._assistant_from_id:
                     role = CHAT_ROLE_ASSISTANT
@@ -295,6 +294,20 @@ class DatasetSourceTelegram(DatasetSource):
                     DatasetChatEntry(role=role, content=message.text)
                 )
 
-            dataset_chats.append(DatasetChat(dataset_chat_entries))
+            dataset_chats.append(
+                DatasetChat(
+                    system_message=system_message,
+                    entries=dataset_chat_entries,
+                )
+            )
 
         return dataset_chats
+
+    def _get_user_message_from_chat(
+        self, chat: _TelegramChat
+    ) -> _TelegramChatMessage | None:
+        for message in chat.messages:
+            if message.from_id != self._assistant_from_id:
+                return message
+
+        return None
