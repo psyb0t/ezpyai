@@ -130,16 +130,6 @@ class KnowledgeGatherer:
         logger.debug(f"Summarized knowledge item: {knowledge_item}")
 
     def _process_file(self, file_path: str):
-        """
-        Process the given file and add its data to the _items dictionary.
-
-        Args:
-            file_path (str): The path to the file.
-
-        Raises:
-            UnsupportedFileTypeError: If the file type is not supported.
-            FileReadError: If there is an error reading the file.
-        """
         logger.debug(f"Processing file: {file_path}")
 
         mime = magic.Magic(mime=True)

@@ -7,7 +7,7 @@ from jinja2 import Template
 from ezpyai._logger import logger
 from ezpyai.exceptions import FileNotFoundError, JSONParseError
 from ezpyai.llm.dataset.chat.sources._dataset_source import DatasetSource
-from ezpyai.llm.dataset.chat import DatasetChat, DatasetChatEntry
+from ezpyai.llm.conversation import Message, Conversation
 
 from ezpyai.constants import (
     DICT_KEY_CHATS,
@@ -233,6 +233,9 @@ class DatasetSourceTelegram(DatasetSource):
         if DICT_KEY_TEXT_ENTITIES not in message:
             return False
 
+        if len(message[DICT_KEY_TEXT_ENTITIES]) == 0:
+            return False
+
         return True
 
     def _get_processed_message(self, message: Dict[str, Any]) -> _TelegramChatMessage:
@@ -268,12 +271,15 @@ class DatasetSourceTelegram(DatasetSource):
             message_text,
         )
 
-    def to_dataset_chats(self, system_message_tpl: str = "") -> List[DatasetChat]:
-        dataset_chats: List[DatasetChat] = []
+    def to_conversations(
+        self,
+        system_message_tpl: str = "",
+    ) -> List[Conversation]:
+        dataset_chats: List[Conversation] = []
         chats = self._get_chats(with_zero_messages=False)
 
         for chat in chats:
-            dataset_chat_entries: List[DatasetChatEntry] = []
+            conversation_messages: List[Message] = []
             system_message: str = ""
 
             if system_message_tpl:
@@ -290,14 +296,12 @@ class DatasetSourceTelegram(DatasetSource):
                 if message.from_id == self._assistant_from_id:
                     role = CHAT_ROLE_ASSISTANT
 
-                dataset_chat_entries.append(
-                    DatasetChatEntry(role=role, content=message.text)
-                )
+                conversation_messages.append(Message(role=role, content=message.text))
 
             dataset_chats.append(
-                DatasetChat(
+                Conversation(
                     system_message=system_message,
-                    entries=dataset_chat_entries,
+                    messages=conversation_messages,
                 )
             )
 
