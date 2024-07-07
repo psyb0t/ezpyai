@@ -1,3 +1,4 @@
+import json
 from typing import List, Dict
 from ezpyai.constants import (
     DICT_KEY_ROLE,
@@ -93,6 +94,12 @@ class Conversation:
             messages.append(message.to_dict())
 
         return messages
+
+    def to_json(self, pretty_print: bool = False) -> str:
+        if pretty_print:
+            return json.dumps(self.to_dict_list(), indent=4)
+
+        return json.dumps(self.to_dict_list())
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: system_message={self.system_message}, num_messages={len(self.messages)}"
