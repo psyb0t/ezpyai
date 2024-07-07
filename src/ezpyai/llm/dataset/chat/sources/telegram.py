@@ -275,37 +275,43 @@ class DatasetSourceTelegram(DatasetSource):
         self,
         system_message_tpl: str = "",
     ) -> List[Conversation]:
-        dataset_chats: List[Conversation] = []
+        conversations: List[Conversation] = []
         chats = self._get_chats(with_zero_messages=False)
-
         for chat in chats:
             conversation_messages: List[Message] = []
             system_message: str = ""
-
             if system_message_tpl:
                 user_message: _TelegramChatMessage | None = (
                     self._get_user_message_from_chat(chat)
                 )
-
                 if user_message:
                     template = Template(system_message_tpl)
                     system_message = template.render(chat=chat, message=user_message)
 
+            last_role: str | None = None
             for message in chat.messages:
                 role: str = CHAT_ROLE_USER
                 if message.from_id == self._assistant_from_id:
                     role = CHAT_ROLE_ASSISTANT
 
-                conversation_messages.append(Message(role=role, content=message.text))
+                if role == last_role and conversation_messages:
+                    # Append the current message text to the previous message's content
+                    conversation_messages[-1].content += f" {message.text}"
+                else:
+                    # Add a new message if the role is different
+                    conversation_messages.append(
+                        Message(role=role, content=message.text)
+                    )
 
-            dataset_chats.append(
+                last_role = role
+
+            conversations.append(
                 Conversation(
                     system_message=system_message,
                     messages=conversation_messages,
                 )
             )
-
-        return dataset_chats
+        return conversations
 
     def _get_user_message_from_chat(
         self, chat: _TelegramChat

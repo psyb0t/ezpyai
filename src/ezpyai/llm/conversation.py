@@ -94,8 +94,5 @@ class Conversation:
 
         return messages
 
-    def to_sharegpt_format(self) -> List[Dict[str, str]]:
-        return [message.to_sharegpt_format() for message in self.messages]
-
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: system_message={self.system_message}, num_messages={len(self.messages)}"
