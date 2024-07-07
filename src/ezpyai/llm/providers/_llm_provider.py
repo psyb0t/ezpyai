@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Union, Dict, List, Any
+from typing import Dict, List, Any
 
 from ezpyai.llm.prompt import Prompt
 from ezpyai.exceptions import JSONParseError
@@ -18,8 +18,8 @@ class LLMProvider(ABC):
 
     @abstractmethod
     def get_structured_response(
-        self, prompt: Prompt, response_format: Union[List, Dict]
-    ) -> Union[List, Dict]:
+        self, prompt: Prompt, response_format: List[Any] | Dict[Any, Any]
+    ) -> List[Any] | Dict[Any, Any] | None:
         pass
 
 
@@ -29,7 +29,7 @@ class BaseLLMProvider(LLMProvider):
     """
 
     @abstractmethod
-    def get_response(self, _: Prompt) -> str:
+    def get_response(self, prompt: Prompt) -> str:
         """
         Get the response for the given prompt.
 
@@ -43,7 +43,7 @@ class BaseLLMProvider(LLMProvider):
         return ""
 
     def _validate_response_format(
-        self, data: Any, response_format: Union[Dict, List]
+        self, data: Any, response_format: Dict[Any, Any] | List[Any]
     ) -> bool:
         """
         Validate the response format.
@@ -58,6 +58,7 @@ class BaseLLMProvider(LLMProvider):
 
         if not response_format:
             return True
+
         if isinstance(response_format, dict):
             if not isinstance(data, dict):
                 return False
@@ -91,17 +92,17 @@ class BaseLLMProvider(LLMProvider):
         return response
 
     def get_structured_response(
-        self, prompt: Prompt, response_format: Union[List, Dict]
-    ) -> Union[List, Dict]:
+        self, prompt: Prompt, response_format: Dict[Any, Any] | List[Any]
+    ) -> Dict[Any, Any] | List[Any] | None:
         """
-        Get the structured response for the given prompt.
+        Get the structured response for the given prompt and response format.
 
         Args:
             prompt (Prompt): The input prompt.
-            response_format (Union[Dict, List]): The response format.
+            response_format Dict[Any, Any] | List[Any]: The response format.
 
         Returns:
-            Union[List, Dict]: The structured response.
+            Dict[Any, Any] | List[Any]: The structured response.
 
         Raises:
             JSONParseError: If the response cannot be parsed as JSON.
@@ -117,8 +118,10 @@ class BaseLLMProvider(LLMProvider):
 
         try:
             structured_resp = json.loads(response)
-        except:
-            raise JSONParseError(f"Failed to parse structured response: {response}")
+        except Exception as e:
+            raise JSONParseError(
+                f"Failed to parse structured response: {response}"
+            ) from e
 
         if self._validate_response_format(structured_resp, response_format):
             return structured_resp

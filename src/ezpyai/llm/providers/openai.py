@@ -12,10 +12,11 @@ from ezpyai.exceptions import (
     LLMResponseEmptyError,
 )
 
-from ezpyai.constants._constants import (
+from ezpyai.constants import (
     ENV_VAR_NAME_OPENAI_API_KEY,
     ENV_VAR_NAME_OPENAI_ORGANIZATION,
     ENV_VAR_NAME_OPENAI_PROJECT,
+    DICT_KEY_ROLE,
 )
 
 
@@ -58,15 +59,14 @@ _DEFAULT_MAX_TOKENS: int = 150
 
 
 class LLMProviderOpenAI(BaseLLMProvider):
-
     def __init__(
         self,
         model: str = _DEFAULT_MODEL,
         temperature: float = _DEFAULT_TEMPERATURE,
         max_tokens: int = _DEFAULT_MAX_TOKENS,
-        api_key: str = None,
-        organization: str = None,
-        project: str = None,
+        api_key: str | None = None,
+        organization: str | None = None,
+        project: str | None = None,
     ) -> None:
         if api_key is None:
             api_key = os.getenv(ENV_VAR_NAME_OPENAI_API_KEY)
@@ -90,14 +90,14 @@ class LLMProviderOpenAI(BaseLLMProvider):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(model={self._model}, temperature={self._temperature}, max_tokens={self._max_tokens})"
 
-    def _get_system_message(self, message: str) -> dict:
-        return {"role": "system", "content": message}
+    def _get_system_message(self, message: str) -> Dict[str, str]:
+        return {DICT_KEY_ROLE: "system", "content": message}
 
-    def _get_user_message(self, message: str) -> dict:
-        return {"role": "user", "content": message}
+    def _get_user_message(self, message: str) -> Dict[str, str]:
+        return {DICT_KEY_ROLE: "user", "content": message}
 
-    def _prompt_to_messages(self, prompt: Prompt) -> List[Dict]:
-        messages = []
+    def _prompt_to_messages(self, prompt: Prompt) -> List[Dict[str, str]]:
+        messages: List[Dict[str, str]] = []
         if prompt.has_system_message():
             messages.append(self._get_system_message(prompt.get_system_message()))
 
@@ -129,4 +129,6 @@ class LLMProviderOpenAI(BaseLLMProvider):
         if not response.choices:
             raise LLMResponseEmptyError()
 
-        return response.choices[0].message.content
+        response = response.choices[0].message.content
+
+        return response if response is not None else ""

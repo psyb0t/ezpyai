@@ -1,5 +1,5 @@
 from typing import Dict
-from ezpyai.constants._constants import (
+from ezpyai.constants import (
     DICT_KEY_ID,
     DICT_KEY_METADATA,
     DICT_KEY_CONTENT,

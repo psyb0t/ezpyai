@@ -3,7 +3,7 @@ import os
 from openai import OpenAI
 from typing import List
 
-from ezpyai.constants._constants import (
+from ezpyai.constants import (
     ENV_VAR_NAME_TEXT_GENERATION_WEBUI_API_KEY,
     ENV_VAR_NAME_TEXT_GENERATION_WEBUI_BASE_URL,
 )
@@ -27,9 +27,9 @@ class LLMProviderTextGenerationWebUI(LLMProviderOpenAI):
 
     Args:
         model (str): The model to use.
-        loras (List[str]): The loras to use.
-        base_url (str): The base URL of the API.
-        api_key (str): The API key for authentication.
+        loras (List[str] | None): The loras to use.
+        base_url (str | None): The base URL of the API.
+        api_key (str | None): The API key for authentication.
         temperature (float): The temperature to use.
         max_tokens (int): The maximum number of tokens to generate.
 
@@ -41,9 +41,9 @@ class LLMProviderTextGenerationWebUI(LLMProviderOpenAI):
     def __init__(
         self,
         model: str,
-        loras: List[str] = None,
-        base_url: str = None,
-        api_key: str = None,
+        loras: List[str] | None = None,
+        base_url: str | None = None,
+        api_key: str | None = None,
         temperature: float = _DEFAULT_TEMPERATURE,
         max_tokens: int = _DEFAULT_MAX_TOKENS,
     ) -> None:

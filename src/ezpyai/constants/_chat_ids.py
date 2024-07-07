@@ -1,0 +1,1 @@
+CHAT_ID_TELEGRAM: int = 777000

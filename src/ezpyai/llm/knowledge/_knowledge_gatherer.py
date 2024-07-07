@@ -19,7 +19,7 @@ from typing import Dict
 from PyPDF2 import PdfReader
 from docx import Document
 from ezpyai._logger import logger
-from ezpyai.constants._constants import DICT_KEY_SUMMARY
+from ezpyai.constants import DICT_KEY_SUMMARY
 from ezpyai.llm.providers._llm_provider import LLMProvider
 from ezpyai.llm.prompt import Prompt, get_summarizer_prompt
 from ezpyai.llm.knowledge.knowledge_item import KnowledgeItem
