@@ -1,1 +1,1 @@
-from ezpyai.dataset.chat.chat import DatasetChat
+from ezpyai.dataset.chat.dataset_chat import DatasetChat, DatasetChatEntry  # type: ignore

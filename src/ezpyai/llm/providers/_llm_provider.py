@@ -24,38 +24,13 @@ class LLMProvider(ABC):
 
 
 class BaseLLMProvider(LLMProvider):
-    """
-    Base class for LLM providers.
-    """
-
     @abstractmethod
     def get_response(self, prompt: Prompt) -> str:
-        """
-        Get the response for the given prompt.
-
-        Args:
-            prompt (Prompt): The input prompt.
-
-        Returns:
-            str: The response.
-        """
-
         return ""
 
     def _validate_response_format(
         self, data: Any, response_format: Dict[Any, Any] | List[Any]
     ) -> bool:
-        """
-        Validate the response format.
-
-        Args:
-            data (Any): The data to validate.
-            response_format (Union[Dict, List]): The response format.
-
-        Returns:
-            bool: True if the response format is valid, False otherwise.
-        """
-
         if not response_format:
             return True
 
@@ -75,16 +50,6 @@ class BaseLLMProvider(LLMProvider):
             )
 
     def remove_artifacts(self, response: str) -> str:
-        """
-        Remove artifacts from the response.
-
-        Args:
-            response (str): The response to remove artifacts from.
-
-        Returns:
-            str: The response without artifacts.
-        """
-
         artifacts = ["```json", "```"]
         for artifact in artifacts:
             response = response.replace(artifact, "")
@@ -94,20 +59,6 @@ class BaseLLMProvider(LLMProvider):
     def get_structured_response(
         self, prompt: Prompt, response_format: Dict[Any, Any] | List[Any]
     ) -> Dict[Any, Any] | List[Any] | None:
-        """
-        Get the structured response for the given prompt and response format.
-
-        Args:
-            prompt (Prompt): The input prompt.
-            response_format Dict[Any, Any] | List[Any]: The response format.
-
-        Returns:
-            Dict[Any, Any] | List[Any]: The structured response.
-
-        Raises:
-            JSONParseError: If the response cannot be parsed as JSON.
-        """
-
         prompt = Prompt(
             user_message=prompt.get_user_message(),
             context=prompt.get_context(),

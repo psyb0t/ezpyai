@@ -2,9 +2,13 @@ import os
 import json
 from typing import List, Dict, Any
 from datetime import datetime
+from jinja2 import Template
 
 from ezpyai._logger import logger
 from ezpyai.exceptions import FileNotFoundError, JSONParseError
+from ezpyai.dataset.chat.sources._dataset_source import DatasetSource
+from ezpyai.dataset.chat import DatasetChat, DatasetChatEntry
+
 from ezpyai.constants import (
     DICT_KEY_CHATS,
     DICT_KEY_LIST,
@@ -12,6 +16,8 @@ from ezpyai.constants import (
     DICT_KEY_ID,
     DICT_KEY_NAME,
     DICT_KEY_MESSAGES,
+    DICT_KEY_NUM_MESSAGES,
+    DICT_KEY_DATE,
     DICT_KEY_DATE_UNIXTIME,
     DICT_KEY_TEXT,
     DICT_KEY_TEXT_ENTITIES,
@@ -19,13 +25,15 @@ from ezpyai.constants import (
     DICT_KEY_FROM_ID,
     NAME_UNKNOWN,
     CHAT_ID_TELEGRAM,
+    CHAT_ROLE_SYSTEM,
+    CHAT_ROLE_USER,
+    CHAT_ROLE_ASSISTANT,
 )
 
 _TELEGRAM_CHAT_TYPE_PERSONAL: str = "personal_chat"
 _TELEGRAM_MESSAGE_TYPE_MESSAGE: str = "message"
 
 
-# dict_keys(['id', 'type', 'date', 'date_unixtime', 'from', 'from_id', 'text', 'text_entities'])
 class _TelegramChatMessage:
     def __init__(
         self,
@@ -49,13 +57,13 @@ class _TelegramChatMessage:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "id": self.id,
-            "type": self.type,
-            "date": self.date,
-            "date_unixtime": self.date_unixtime,
-            "from": self.from_name,
-            "from_id": self.from_id,
-            "text": self.text,
+            DICT_KEY_ID: self.id,
+            DICT_KEY_TYPE: self.type,
+            DICT_KEY_DATE: self.date,
+            DICT_KEY_DATE_UNIXTIME: self.date_unixtime,
+            DICT_KEY_FROM: self.from_name,
+            DICT_KEY_FROM_ID: self.from_id,
+            DICT_KEY_TEXT: self.text,
         }
 
 
@@ -72,20 +80,20 @@ class _TelegramChat:
 
     def __str__(self) -> str:
         dict_repr = self.to_dict()
-        dict_repr["num_messages"] = len(dict_repr["messages"])
-        dict_repr.pop("messages")
+        dict_repr[DICT_KEY_NUM_MESSAGES] = len(dict_repr[DICT_KEY_MESSAGES])
+        dict_repr.pop(DICT_KEY_MESSAGES)
 
         return f"{self.__class__.__name__}: {dict_repr}"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "id": self.id,
-            "name": self.name,
-            "messages": [message.to_dict() for message in self.messages],
+            DICT_KEY_ID: self.id,
+            DICT_KEY_NAME: self.name,
+            DICT_KEY_MESSAGES: [message.to_dict() for message in self.messages],
         }
 
 
-class DatasetSourceTelegram:
+class DatasetSourceTelegram(DatasetSource):
     def __init__(
         self,
         json_export_file_path: str,
@@ -105,7 +113,7 @@ class DatasetSourceTelegram:
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(json_export_file_path={self._json_export_file_path}, assistant_from_id={self._assistant_from_id}, entries={len(self._chats)})"
 
-    def get_chats(
+    def _get_chats(
         self,
         with_zero_messages: bool = True,
     ) -> List[_TelegramChat]:
@@ -260,3 +268,33 @@ class DatasetSourceTelegram:
             message_from_id,
             message_text,
         )
+
+    def to_dataset_chats(self, system_message_tpl: str = "") -> List[DatasetChat]:
+        dataset_chats: List[DatasetChat] = []
+        chats = self._get_chats(with_zero_messages=False)
+
+        for chat in chats:
+            dataset_chat_entries: List[DatasetChatEntry] = []
+            system_message_is_set = False
+            for message in chat.messages:
+                if not system_message_is_set and system_message_tpl:
+                    template = Template(system_message_tpl)
+                    content = template.render(chat=chat, message=message)
+
+                    dataset_chat_entries.append(
+                        DatasetChatEntry(role=CHAT_ROLE_SYSTEM, content=content)
+                    )
+
+                    system_message_is_set = True
+
+                role: str = CHAT_ROLE_USER
+                if message.from_id == self._assistant_from_id:
+                    role = CHAT_ROLE_ASSISTANT
+
+                dataset_chat_entries.append(
+                    DatasetChatEntry(role=role, content=message.text)
+                )
+
+            dataset_chats.append(DatasetChat(dataset_chat_entries))
+
+        return dataset_chats

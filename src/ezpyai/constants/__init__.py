@@ -5,5 +5,6 @@ from ezpyai.constants._http_headers import *
 from ezpyai.constants._http_methods import *
 from ezpyai.constants._names import *
 from ezpyai.constants._chat_ids import *
+from ezpyai.constants._chat_roles import *
 
 LIB_NAME: str = "ezpyai"

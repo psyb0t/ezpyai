@@ -1,1 +1,1 @@
-from ezpyai.dataset.chat.sources.telegram import DatasetSourceTelegram
+from ezpyai.dataset.chat.sources.telegram import DatasetSourceTelegram  # type: ignore
