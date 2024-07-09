@@ -1,6 +1,8 @@
 import os
 import json
-from typing import List, Dict, Any
+import re
+
+from typing import List, Dict, Any, Tuple
 from datetime import datetime
 from jinja2 import Template
 
@@ -274,12 +276,15 @@ class DatasetSourceTelegram(DatasetSource):
     def to_conversations(
         self,
         system_message_tpl: str = "",
+        replace_rules: List[Tuple[str, str]] = [],
     ) -> List[Conversation]:
         conversations: List[Conversation] = []
         chats = self._get_chats(with_zero_messages=False)
+
         for chat in chats:
             conversation_messages: List[Message] = []
             system_message: str = ""
+
             if system_message_tpl:
                 user_message: _TelegramChatMessage | None = (
                     self._get_user_message_from_chat(chat)
@@ -294,16 +299,23 @@ class DatasetSourceTelegram(DatasetSource):
                 if message.from_id == self._assistant_from_id:
                     role = CHAT_ROLE_ASSISTANT
 
-                if role == last_role and conversation_messages:
-                    # Append the current message text to the previous message's content
-                    conversation_messages[-1].content += f" {message.text}"
-                else:
-                    # Add a new message if the role is different
-                    conversation_messages.append(
-                        Message(role=role, content=message.text)
-                    )
+                content = message.text.strip()
 
-                last_role = role
+                # Apply replace rules
+                for pattern, replacement in replace_rules:
+                    content = re.sub(pattern, replacement, content)
+
+                if content:
+                    if role == last_role and conversation_messages:
+                        # Append the current message text to the previous message's content
+                        # separated by a newline
+                        conversation_messages[-1].content += f"\n{content}"
+                    else:
+                        # Add a new message if the role is different
+                        conversation_messages.append(
+                            Message(role=role, content=content)
+                        )
+                    last_role = role
 
             conversations.append(
                 Conversation(
@@ -311,6 +323,7 @@ class DatasetSourceTelegram(DatasetSource):
                     messages=conversation_messages,
                 )
             )
+
         return conversations
 
     def _get_user_message_from_chat(
