@@ -2,7 +2,7 @@ import os
 import json
 import re
 
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Match
 from datetime import datetime
 from jinja2 import Template
 
@@ -273,10 +273,27 @@ class DatasetSourceTelegram(DatasetSource):
             message_text,
         )
 
+    def limit_repeats(
+        self,
+        text: str,
+        max_repeats: int = 3,
+        min_repetitions_before_limiting: int = 5,
+    ) -> str:
+        def replace_func(match: Match[str]) -> str:
+            char = match.group(1)
+            return char * min(
+                len(match.group(0)), min_repetitions_before_limiting - 1 + max_repeats
+            )
+
+        pattern = rf"(.)(\1{{{min_repetitions_before_limiting-1},}})"
+        return re.sub(pattern, replace_func, text)
+
     def to_conversations(
         self,
         system_message_tpl: str = "",
         replace_rules: List[Tuple[str, str]] = [],
+        max_character_repeats: int = 0,
+        min_repetitions_before_limiting: int = 0,
     ) -> List[Conversation]:
         conversations: List[Conversation] = []
         chats = self._get_chats(with_zero_messages=False)
@@ -306,6 +323,16 @@ class DatasetSourceTelegram(DatasetSource):
                     content = re.sub(pattern, replacement, content)
 
                 if content:
+                    if (
+                        max_character_repeats > 0
+                        and min_repetitions_before_limiting > 0
+                    ):
+                        content = self.limit_repeats(
+                            content,
+                            max_repeats=max_character_repeats,
+                            min_repetitions_before_limiting=min_repetitions_before_limiting,
+                        )
+
                     if role == last_role and conversation_messages:
                         # Append the current message text to the previous message's content
                         # separated by a newline
