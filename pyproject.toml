@@ -11,7 +11,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "openai==1.35.10",
-    "chromadb==0.5.3",
+    "chromadb==0.5.4",
     "pypdf2==3.0.1",
     "python-docx==1.1.2",
     "python-magic==0.4.27",
