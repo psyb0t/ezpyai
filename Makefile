@@ -10,12 +10,13 @@ clean: ## Clean the build artifacts
 	rm -rf ./dist
 
 tag: ## Tag a new release
-	@echo "Enter new version tag (e.g., v0.1.0): "; \
+	@LAST_TAG=$$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"); \
+	echo "Enter new version tag (last tag: $$LAST_TAG): "; \
 	read TAG; \
-	git tag -a $$TAG -m "Release $$TAG"; \
 	sed -i "s/version = \".*\"/version = \"$$TAG\"/" pyproject.toml; \
 	git add pyproject.toml; \
 	git commit -m "Update version to $$TAG"; \
+	git tag -a $$TAG -m "Release $$TAG"; \
 	git push; \
 	git push --tags
 
