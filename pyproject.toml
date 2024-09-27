@@ -11,11 +11,11 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "openai==1.49.0",
-    "chromadb==0.5.5",
+    "chromadb==0.5.9",
     "pypdf>=3.9.0",
     "python-docx==1.1.2",
     "python-magic==0.4.27",
-    "pandas==2.2.2",
+    "pandas==2.2.3",
     "beautifulsoup4==4.12.3 ",
 ]
 classifiers = [
