@@ -1,5 +1,8 @@
 # ezpyai
 
+[![version](https://raw.githubusercontent.com/psyb0t/ezpyai/badges/version.svg)](https://github.com/psyb0t/ezpyai/releases)
+[![license](https://raw.githubusercontent.com/psyb0t/ezpyai/badges/license.svg)](LICENSE)
+
 Welcome to `ezpyai`, your new best friend in the wild, wild world of AI! Whether you're a coding wizard, a data sorcerer, or just someone who likes to mess around with powerful tools, this Python utility library is here to make your life easier and your AI dreams a reality. Hack the planet, one prompt at a time!
 
 ## Features
